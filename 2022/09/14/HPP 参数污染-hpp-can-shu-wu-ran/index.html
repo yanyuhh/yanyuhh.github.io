@@ -1,0 +1,665 @@
+
+<!DOCTYPE html><html lang="zh-CN">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="hexo-theme" content="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.0" theme-name="Stellar" theme-version="1.29.0">
+  
+  <meta name="generator" content="Hexo 7.3.0">
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000">
+  <meta name="theme-color" content="#f9fafb">
+  
+  <title>HPP 参数污染 - 言喻的博客</title>
+
+  
+    <meta name="description" content="一、HPP概念HTTP Parameter Pollution即HTTP参数污染，简称HPP。是web容器处理HTTP参数的一种方式。 HTTP 参数污染 (HPP) 是一种 Web 攻击规避技术，允许攻击者通过更改 HTTP 请求以操纵或搜索隐藏信息。这种规避技术基于在具有相同名称的参数的多个实例之间拆分攻击向量。某些环境通过从请求中连接的参数名称的所有实例中获取的值来处理此类请求。 通常，攻击">
+<meta property="og:type" content="article">
+<meta property="og:title" content="HPP 参数污染">
+<meta property="og:url" content="https://yanyuhh.github.io/2022/09/14/HPP%20%E5%8F%82%E6%95%B0%E6%B1%A1%E6%9F%93-hpp-can-shu-wu-ran/index.html">
+<meta property="og:site_name" content="言喻的博客">
+<meta property="og:description" content="一、HPP概念HTTP Parameter Pollution即HTTP参数污染，简称HPP。是web容器处理HTTP参数的一种方式。 HTTP 参数污染 (HPP) 是一种 Web 攻击规避技术，允许攻击者通过更改 HTTP 请求以操纵或搜索隐藏信息。这种规避技术基于在具有相同名称的参数的多个实例之间拆分攻击向量。某些环境通过从请求中连接的参数名称的所有实例中获取的值来处理此类请求。 通常，攻击">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://yanyuhh.github.io/images/2022/09/image-1663166598373.png">
+<meta property="og:image" content="https://yanyuhh.github.io/images/2022/09/image-1663166603732.png">
+<meta property="article:published_time" content="2022-09-14T14:57:16.205Z">
+<meta property="article:modified_time" content="2022-09-14T15:06:10.828Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://yanyuhh.github.io/images/2022/09/image-1663166598373.png">
+<meta name="twitter:creator" content="@12345678">
+  
+  
+  
+  
+
+  <!-- feed -->
+  
+    <link rel="alternate" href="/atom.xml" title="言喻的博客" type="application/atom+xml">
+  
+
+  <link rel="stylesheet" href="/css/main.css?v=1.29.0">
+
+  
+    <link rel="shortcut icon" href="/images/avatar.png">
+  
+
+  
+
+  <link rel="preconnect" href="https://s1.hdslb.com/" /><link rel="stylesheet" href="//s1.hdslb.com/bfs/static/jinkela/long/font/medium.css" media="all" onload="this.media='all'" /><link rel="stylesheet" href="//s1.hdslb.com/bfs/static/jinkela/long/font/regular.css" media="all" onload="this.media='all'" />
+</head>
+<body>
+
+<div class="l_body s:aa content tech" id="start" layout="post" ><aside class="l_left"><div class="leftbar-container">
+
+
+<header class="header"><div class="logo-wrap"><a class="avatar" href="/about/"><div class="bg" style="opacity:0;background-image:url(https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="/images/avatar.png" onerror="javascript:this.classList.add('error');this.src='https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/image/2659360.svg';"></a><a class="title" href="/"><div class="main" ff="title">言喻的博客</div></a></div></header>
+
+<div class="nav-area">
+<div class="search-wrapper" id="search-wrapper"><form class="search-form"><a class="search-button" onclick="document.getElementById(&quot;search-input&quot;).focus();"><svg t="1705074644177" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1560" width="200" height="200"><path d="M1008.839137 935.96571L792.364903 719.491476a56.783488 56.783488 0 0 0-80.152866 0 358.53545 358.53545 0 1 1 100.857314-335.166073 362.840335 362.840335 0 0 1-3.689902 170.145468 51.248635 51.248635 0 1 0 99.217358 26.444296 462.057693 462.057693 0 1 0-158.255785 242.303546l185.930047 185.725053a51.248635 51.248635 0 0 0 72.568068 0 51.248635 51.248635 0 0 0 0-72.978056z" p-id="1561"></path><path d="M616.479587 615.969233a50.428657 50.428657 0 0 0-61.498362-5.534852 174.655348 174.655348 0 0 1-177.525271 3.484907 49.403684 49.403684 0 0 0-58.833433 6.76482l-3.074918 2.869923a49.403684 49.403684 0 0 0 8.609771 78.10292 277.767601 277.767601 0 0 0 286.992355-5.739847 49.403684 49.403684 0 0 0 8.404776-76.667958z" p-id="1562"></path></svg></a><input type="text" class="search-input" id="search-input" placeholder="站内搜索"></form><div id="search-result"></div><div class="search-no-result">没有找到内容！</div></div>
+
+
+<nav class="menu dis-select"></nav>
+</div>
+<div class="widgets">
+
+
+<widget class="widget-wrapper post-list"><div class="widget-header dis-select"><span class="name">最近更新</span><a class="cap-action" id="rss" title="Subscribe" href="atom.xml"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="currentColor" d="M5 21q-.825 0-1.412-.587T3 19q0-.825.588-1.412T5 17q.825 0 1.413.588T7 19q0 .825-.587 1.413T5 21m13.5 0q-.65 0-1.088-.475T16.9 19.4q-.275-2.425-1.312-4.537T12.9 11.1q-1.65-1.65-3.762-2.687T4.6 7.1q-.65-.075-1.125-.512T3 5.5q0-.65.45-1.062t1.075-.363q3.075.275 5.763 1.563t4.737 3.337q2.05 2.05 3.338 4.738t1.562 5.762q.05.625-.363 1.075T18.5 21m-6 0q-.625 0-1.075-.437T10.85 19.5q-.225-1.225-.787-2.262T8.65 15.35q-.85-.85-1.888-1.412T4.5 13.15q-.625-.125-1.062-.575T3 11.5q0-.65.45-1.075t1.075-.325q1.825.25 3.413 1.063t2.837 2.062q1.25 1.25 2.063 2.838t1.062 3.412q.1.625-.325 1.075T12.5 21"/></svg></a></div><div class="widget-body fs14"><a class="item title" href="/2022/10/19/Docker%E5%AE%B9%E5%99%A8%E9%80%83%E9%80%B8-docker%E5%AE%B9%E5%99%A8%E9%80%83%E9%80%B8/"><span class="title">Docker容器逃逸</span></a><a class="item title" href="/2022/09/20/redis%20%E6%9C%AA%E6%8E%88%E6%9D%83%E8%AE%BF%E9%97%AE%20(CNVD-2019-21763)-redis-wei-shou-quan-fang-wen-cnvd-2019-21763/"><span class="title">redis 未授权访问 (CNVD-2019-21763)</span></a><a class="item title" href="/2022/09/20/Redis%E6%B2%99%E7%9B%92%E9%80%83%E9%80%B8(CVE-2022-0543)%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0-redis-sha-he-tao-yi-cve-2022-0543-lou-dong-fu-xian/"><span class="title">Redis沙盒逃逸(CVE-2022-0543)漏洞复现</span></a><a class="item title" href="/2022/09/14/Mysql%E7%9A%84Udf%20Mof%20%E6%8F%90%E6%9D%83-mysql%E7%9A%84udfmof%E6%8F%90%E6%9D%83/"><span class="title">Mysql的Udf Mof 提权</span></a><a class="item title" href="/2022/09/14/HPP%20%E5%8F%82%E6%95%B0%E6%B1%A1%E6%9F%93-hpp-can-shu-wu-ran/"><span class="title">HPP 参数污染</span></a></div></widget>
+</div>
+
+</div></aside><div class="l_main" id="main">
+
+
+
+
+
+<div class="article banner top">
+  <div class="content">
+    <div class="top bread-nav footnote"><div class="left"><div class="flex-row" id="breadcrumb"><a class="cap breadcrumb" href="/">主页</a>
+<span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/categories/other/">other</a></div>
+<div class="flex-row" id="post-meta"><span class="text created">发布于：<time datetime="2022-09-14T14:57:16.205Z">2022-09-14</time></span><span class="sep updated"></span><span class="text updated">更新于：<time datetime="2022-09-14T15:06:10.828Z">2022-09-14</time></span></div></div></div>
+    
+    <div class="bottom only-title">
+      
+      <div class="text-area">
+        <h1 class="text title"><span>HPP 参数污染</span></h1>
+        
+      </div>
+    </div>
+    
+  </div>
+  </div><article class="md-text content"><h3 id="一、HPP概念"><a href="#一、HPP概念" class="headerlink" title="一、HPP概念"></a>一、HPP概念</h3><p>HTTP Parameter Pollution即HTTP参数污染，简称HPP。<br>是web容器处理HTTP参数的一种方式。</p>
+<p>HTTP 参数污染 (HPP) 是一种 Web 攻击规避技术，允许攻击者通过更改 HTTP 请求以操纵或搜索隐藏信息。这种规避技术基于在具有相同名称的参数的多个实例之间拆分攻击向量。<br>某些环境通过从请求中连接的参数名称的所有实例中获取的值来处理此类请求。</p>
+<p>通常，攻击者可以利用 HPP 漏洞有如下几点：</p>
+<ol>
+<li>取代现有的硬编码 HTTP 参数。</li>
+<li>更改或修改预期&#x2F;正常的应用程序行为。</li>
+<li>访问并可能利用未正确控制的变量。</li>
+<li>绕过 WAF 规则或输入验证机制</li>
+</ol>
+<h3 id="二、HPP实质"><a href="#二、HPP实质" class="headerlink" title="二、HPP实质"></a>二、HPP实质</h3><p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/../images/2022/09/image-1663166598373.png" alt="image-1663166598373"><br><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="/../images/2022/09/image-1663166603732.png" alt="image-1663166603732"></p>
+<p>观察这两个url ，在HTTP请求中，使用&amp;可以连接不同的参数。如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://192.168.215.129/hpp.php?str=123&amp;str=456</span><br></pre></td></tr></table></figure>
+<p>那么此时在取值时只输出最后一个参数，输出则为456。这就是HTTP参数污染。</p>
+<h3 id="三、HPP漏洞分类"><a href="#三、HPP漏洞分类" class="headerlink" title="三、HPP漏洞分类"></a>三、HPP漏洞分类</h3><h4 id="1、服务端HPP"><a href="#1、服务端HPP" class="headerlink" title="1、服务端HPP"></a>1、服务端HPP</h4><p>在服务器端HPP中，尝试给服务器端发送非预期信息来让服务器端代码返回非预期的结果。</p>
+<p>让我们看一个例子，如果银行通过网站接收URL参数发起转账，可能会造成服务器端HPP漏洞。<br>我们观察这个URL：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://www.example.com/transferMoney.php?from=Aboy&amp;to=Bgirl&amp;amount=5000</span><br></pre></td></tr></table></figure>
+
+<p>Aboy向Bgirl转账5000，此时我们在后面再添加一个to参数;</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://www.example.com/transferMoney.php?from=Aboy&amp;to=Bgirl&amp;amount=5000&amp;to=Cboy</span><br></pre></td></tr></table></figure>
+
+<p>如果银行信任它接收到的最后一个to参数，此时就不是Aboy向Bgirl转账5000，而是Aboy向Cboy转账5000。<br>当服务器接收到多个具有相同名称的参数时，它可以通过多种方式去响应。<br>在大多数情况下，PHP 和 Apache取参数的最后一次赋值，Apache Tomcat取参数的第一次赋值，ASP 和 IIS 取参数的所有赋值。</p>
+<h4 id="2、客户端HPP"><a href="#2、客户端HPP" class="headerlink" title="2、客户端HPP"></a>2、客户端HPP</h4><p>客户端HPP漏洞使攻击者可以向URL中注入额外的参数，从而对客户端产生影响(客户端最常见的操作方式是个人电脑，通常是通过浏览器触发，并不是发生在网站的服务器端)。</p>
+<h3 id="四、实战案例总结："><a href="#四、实战案例总结：" class="headerlink" title="四、实战案例总结："></a>四、实战案例总结：</h3><p>HPP漏洞的产生原因一方面来自服务器处理机制的不同，另一方面来自开发人员后端检测逻辑的问题。<br>HTTP 参数污染的风险实际上取决于后端所执行的操作，以及被污染的参数提交到了哪里。总体上HPP一般有两种利用场景：</p>
+<p>1）逻辑漏洞，通常会造成IDOR，信息泄露，越权等漏洞;<br>2）作为其他漏洞的辅助，用于绕过漏洞的检测和Waf等。<br>这里汇总了工作中和国内外遇到的一些典型案例：</p>
+<h4 id="一、-逻辑漏洞（IDOR）"><a href="#一、-逻辑漏洞（IDOR）" class="headerlink" title="一、 逻辑漏洞（IDOR）"></a>一、 逻辑漏洞（IDOR）</h4><h5 id="1、IDOR（不安全的对象引用）"><a href="#1、IDOR（不安全的对象引用）" class="headerlink" title="1、IDOR（不安全的对象引用）"></a>1、IDOR（不安全的对象引用）</h5><p>一般的社交软件都有“关注”或”喜欢”功能，下面就是ID为5318415对5333003进行关注发送的数据包：</p>
+<p>按我们通常挖掘逻辑漏洞的思路，我们可以篡改ID值，使对方关注我。这里5318415是我的ID，但将我的actorId替换为对方的ID，会收到“401 Unauthorized”错误，说明此处做了鉴权操作。</p>
+<p>但是，如果请求2个actorId参数，第一个actorId参数是目标的actorId。这样5024700（受害者）会关注5318415（我）。这次得到的响应是202 Accepted。</p>
+<p>后台对于actorId的鉴权操作是对第二个，关注操作取的却是第一个。所以在测试越权类问题时未果不妨多试一步HPP，下面Twitter案例也是如出一辙：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://twitter.com/i/u?iid=F6542&amp;uid=2321301342&amp;uid=1134885524&amp;nid=22+26</span><br></pre></td></tr></table></figure>
+<p>通过添加第二个uid，取消Twitter的邮箱提醒。</p>
+<h5 id="2、-社交分享链接"><a href="#2、-社交分享链接" class="headerlink" title="2、 社交分享链接"></a>2、 社交分享链接</h5><p>不少网站都有社交分享按钮，可以把内容分享到其他社交媒体，如Hackerone的链接为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://hackerone.com/blog/introducing-signal</span><br></pre></td></tr></table></figure>
+<p>分享到FB上链接为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://www.facebook.com/sharer.php?u=https://hackerone.com/blog/introducing-signal</span><br></pre></td></tr></table></figure>
+
+<p>如果我们将要分享的Hackerone的链接改为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://hackerone.com/blog/introducing-signal?&amp;u=https://vk.com/durov</span><br></pre></td></tr></table></figure>
+
+
+<p>则最终的跳转会成为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://www.facebook.com/sharer.php?u=https://hackerone.com/blog/introducing-signal?&amp;u=https://vk.com/durov</span><br></pre></td></tr></table></figure>
+<p>后一个参数u拥有比第一个更高的优先级，之后会用于 Fackbook 的发布，最终会跳转到恶意站点</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://vk.com/durov</span><br></pre></td></tr></table></figure>
+<h5 id="3、-页面跳转"><a href="#3、-页面跳转" class="headerlink" title="3、 页面跳转"></a>3、 页面跳转</h5><p>一个Digits跳转的案例，跳转链接如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://www.digits.com/login?consumer_key=xx&amp;host=https://www.peiscope.tv</span><br></pre></td></tr></table></figure>
+
+<p>如果直接修改参数为<a href="http://attacker.com，由于注册域不匹配，因此页面将显示错误，但如果我们使用HPP：">http://attacker.com，由于注册域不匹配，因此页面将显示错误，但如果我们使用HPP：</a></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">https://www.digits.com/login?consumer_key=xx&amp;host=https://www.peiscope.tv&amp;host=http://attacker.com</span><br></pre></td></tr></table></figure>
+<p>从而第一个host参数绕过验证，取第二个host参数作为跳转源。</p>
+<h4 id="二、绕过检测（WAF）"><a href="#二、绕过检测（WAF）" class="headerlink" title="二、绕过检测（WAF）"></a>二、绕过检测（WAF）</h4><h5 id="1、SQL绕过1"><a href="#1、SQL绕过1" class="headerlink" title="1、SQL绕过1"></a>1、SQL绕过1</h5><p>一个常见的SQL注入payload如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://xxx/horse.php?id=7 union select 1,2,3，current_user</span><br></pre></td></tr></table></figure>
+
+<p>探测发现网站配置了WAF来阻止任意包含“select”或“union”等常用的SQL查询关键字，通过HPP绕过：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://xxx/horse.php?id=0&amp;amp;id=7%20union%20select%201,2,3,current_user</span><br></pre></td></tr></table></figure>
+<p>注入语句被写到第二个参数值的位置，不会被waf解析。</p>
+<h5 id="2、-SQL绕过2"><a href="#2、-SQL绕过2" class="headerlink" title="2、 SQL绕过2"></a>2、 SQL绕过2</h5><p>ModSecurity过滤器会将类似于select1,2,3 from table这类的语句归类为黑名单。<br>但是这个web服务器在遇到为同一个参数赋值不同数值时，会采取类似谷歌的处理方式，将参数连接起来，以此来绕过黑名单。</p>
+<p>例如提交如下的URL：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://xxx/index.aspx?page=select 1&amp;page=2,3 from table</span><br></pre></td></tr></table></figure>
+
+<h5 id="3、Apple-Cups的XSS"><a href="#3、Apple-Cups的XSS" class="headerlink" title="3、Apple Cups的XSS"></a>3、Apple Cups的XSS</h5><p>Apple Cups是被许多UNIX系统利用的打印系统。系统对kerberos进行了黑名单过滤，通过前置一个重复参数可以触发xss：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://xxx/?kerberos=onmouseover=alert(1)&amp;kerberos=</span><br></pre></td></tr></table></figure>
+
+<p>这个方法可以绕过系统的验证机制，原因是这个验证系统只采纳了第二个kerberos的值，这个值为空，因此不会触发。<br>而第一个kerberos直到被用于构建动态HTML内容前都没有被验证。<br>最终在web站点的上下文中javascript语句被执行。</p>
+<h5 id="4、URL重定向-HPP-XSS"><a href="#4、URL重定向-HPP-XSS" class="headerlink" title="4、URL重定向+HPP+XSS"></a>4、URL重定向+HPP+XSS</h5><p>在点击网站的链接时，会将用户重定向到一个页面，链接为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">xxx.aspx?dest=http://whitelistedWebsite.com</span><br></pre></td></tr></table></figure>
+<p>这容易想到URL重定向漏洞，经过探测，发现dest参数接受的协议有http:&#x2F;&#x2F; ftp:&#x2F;&#x2F; http:&#x2F; javascript:&#x2F;，所以尝试构造xss：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dest=javascript://alert(document.domain)</span><br></pre></td></tr></table></figure>
+<p>发现存在白名单限制，尝试绕过：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dest=javascript:/whitelistedWebsite.com/i;alert(document.domain</span><br></pre></td></tr></table></figure>
+
+<p>但分号；会无法解析，导致报错，最终使用HPP绕过：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dest=javascript:/whitelistedWebsite.com/i&amp;dest=alert(1)</span><br></pre></td></tr></table></figure>
+
+<p>原理和例1类似，接受两个参数值进行拼接：javascript:&#x2F;&#x2F;alert(1)</p>
+<h3 id="五、挖掘技巧："><a href="#五、挖掘技巧：" class="headerlink" title="五、挖掘技巧："></a>五、挖掘技巧：</h3><p>根据上面的实战案例总结，在挖掘HPP漏洞的时候，需要注意以下几点：<br>1、和IDOR漏洞挖掘类似，关注与用户权限紧密相关的参数，有些场景可能防范了IDOR，但重复提交参数可能就会产生奇效；<br>2、在挖掘其他漏洞的时候，如果进行了检测又无法绕过的情况下，可以尝试通过重复提交参数&#x2F;参数拼接方式绕过检测。</p>
+<h3 id="六、预防"><a href="#六、预防" class="headerlink" title="六、预防"></a>六、预防</h3><p>为了防止这些类型的漏洞，应该执行广泛和适当的输入验证。有符合每种网络技术&#x2F;语言的安全方法。此外，应该提高对客户&#x2F;用户可以提供多个参数这一事实的认识。</p>
+
+<div class="article-footer fs14">
+    <section id="license">
+      <div class="header"><span>许可协议</span></div>
+      <div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div>
+    </section>
+    </div>
+</article>
+<div class="related-wrap" id="read-next"><section class="body"><div class="item" id="prev"><div class="note">较新文章</div><a href="/2022/09/20/Redis%E6%B2%99%E7%9B%92%E9%80%83%E9%80%B8(CVE-2022-0543)%E6%BC%8F%E6%B4%9E%E5%A4%8D%E7%8E%B0-redis-sha-he-tao-yi-cve-2022-0543-lou-dong-fu-xian/">Redis沙盒逃逸(CVE-2022-0543)漏洞复现</a></div><div class="item" id="next"><div class="note">较早文章</div><a href="/2022/09/14/Mysql%E7%9A%84Udf%20Mof%20%E6%8F%90%E6%9D%83-mysql%E7%9A%84udfmof%E6%8F%90%E6%9D%83/">Mysql的Udf Mof 提权</a></div></section></div>
+
+
+
+
+
+
+<footer class="page-footer footnote"><hr><div class="text"><p>本站由 <a href="/">John Doe</a> 使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.29.0">Stellar 1.29.0</a> 主题创建。<br>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+</div></footer>
+<div class="main-mask" onclick="sidebar.dismiss()"></div></div><aside class="l_right">
+<div class="widgets">
+
+
+
+<widget class="widget-wrapper toc" id="data-toc" collapse="false"><div class="widget-header dis-select"><span class="name">本文目录</span><a class="cap-action" onclick="sidebar.toggleTOC()" ><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg></a></div><div class="widget-body"><ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E3%80%81HPP%E6%A6%82%E5%BF%B5"><span class="toc-text">一、HPP概念</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E3%80%81HPP%E5%AE%9E%E8%B4%A8"><span class="toc-text">二、HPP实质</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E3%80%81HPP%E6%BC%8F%E6%B4%9E%E5%88%86%E7%B1%BB"><span class="toc-text">三、HPP漏洞分类</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%E3%80%81%E6%9C%8D%E5%8A%A1%E7%AB%AFHPP"><span class="toc-text">1、服务端HPP</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%E3%80%81%E5%AE%A2%E6%88%B7%E7%AB%AFHPP"><span class="toc-text">2、客户端HPP</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%AE%9E%E6%88%98%E6%A1%88%E4%BE%8B%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="toc-text">四、实战案例总结：</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%80%E3%80%81-%E9%80%BB%E8%BE%91%E6%BC%8F%E6%B4%9E%EF%BC%88IDOR%EF%BC%89"><span class="toc-text">一、 逻辑漏洞（IDOR）</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1%E3%80%81IDOR%EF%BC%88%E4%B8%8D%E5%AE%89%E5%85%A8%E7%9A%84%E5%AF%B9%E8%B1%A1%E5%BC%95%E7%94%A8%EF%BC%89"><span class="toc-text">1、IDOR（不安全的对象引用）</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2%E3%80%81-%E7%A4%BE%E4%BA%A4%E5%88%86%E4%BA%AB%E9%93%BE%E6%8E%A5"><span class="toc-text">2、 社交分享链接</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3%E3%80%81-%E9%A1%B5%E9%9D%A2%E8%B7%B3%E8%BD%AC"><span class="toc-text">3、 页面跳转</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E7%BB%95%E8%BF%87%E6%A3%80%E6%B5%8B%EF%BC%88WAF%EF%BC%89"><span class="toc-text">二、绕过检测（WAF）</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#1%E3%80%81SQL%E7%BB%95%E8%BF%871"><span class="toc-text">1、SQL绕过1</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#2%E3%80%81-SQL%E7%BB%95%E8%BF%872"><span class="toc-text">2、 SQL绕过2</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#3%E3%80%81Apple-Cups%E7%9A%84XSS"><span class="toc-text">3、Apple Cups的XSS</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#4%E3%80%81URL%E9%87%8D%E5%AE%9A%E5%90%91-HPP-XSS"><span class="toc-text">4、URL重定向+HPP+XSS</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%8C%96%E6%8E%98%E6%8A%80%E5%B7%A7%EF%BC%9A"><span class="toc-text">五、挖掘技巧：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E9%A2%84%E9%98%B2"><span class="toc-text">六、预防</span></a></li></ol></div><div class="widget-footer">
+
+<a class="top" onclick="util.scrollTop()"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12c0-4.714 0-7.071 1.464-8.536C4.93 2 7.286 2 12 2c4.714 0 7.071 0 8.535 1.464C22 4.93 22 7.286 22 12c0 4.714 0 7.071-1.465 8.535C19.072 22 16.714 22 12 22s-7.071 0-8.536-1.465C2 19.072 2 16.714 2 12Z"/><path stroke-linecap="round" stroke-linejoin="round" d="m9 15.5l3-3l3 3m-6-4l3-3l3 3"/></g></svg><span>回到顶部</span></a></div></widget>
+</div></aside><div class='float-panel blur'>
+  <button type='button' style='display:none' class='laptop-only rightbar-toggle mobile' onclick='sidebar.rightbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6h11m-11 6h11m-11 6h11M4 6h1v4m-1 0h2m0 8H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>
+  </button>
+  <button type='button' style='display:none' class='mobile-only leftbar-toggle mobile' onclick='sidebar.leftbar()'>
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 11c0-3.771 0-5.657 1.172-6.828C4.343 3 6.229 3 10 3h4c3.771 0 5.657 0 6.828 1.172C22 5.343 22 7.229 22 11v2c0 3.771 0 5.657-1.172 6.828C19.657 21 17.771 21 14 21h-4c-3.771 0-5.657 0-6.828-1.172C2 18.657 2 16.771 2 13z"/><path id="sep" stroke-linecap="round" d="M5.5 10h6m-5 4h4m4.5 7V3"/></g></svg>
+  </button>
+</div>
+</div><div class="scripts">
+<script type="text/javascript">
+  const ctx = {
+    date_suffix: {
+      just: `刚刚`,
+      min: `分钟前`,
+      hour: `小时前`,
+      day: `天前`,
+    },
+    root : `/`,
+  };
+
+  // required plugins (only load if needs)
+  if (`local_search`) {
+    ctx.search = {};
+    ctx.search.service = `local_search`;
+    if (ctx.search.service == 'local_search') {
+      let service_obj = Object.assign({}, `{"field":"all","path":"/search.json","content":true,"sort":"-date"}`);
+      ctx.search[ctx.search.service] = service_obj;
+    }
+  }
+  const def = {
+    avatar: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/avatar/round/3442075.svg`,
+    cover: `https://gcore.jsdelivr.net/gh/cdn-x/placeholder@1.0.12/cover/76b86c0226ffd.svg`,
+  };
+  const deps = {
+    jquery: `https://cdn.bootcdn.net/ajax/libs/jquery/3.7.1/jquery.min.js`,
+    marked: `https://cdn.bootcdn.net/ajax/libs/marked/4.0.18/marked.min.js`
+  }
+  
+
+</script>
+
+<script type="text/javascript">
+  const utils = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    css: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    js: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      if (src.startsWith('/')){
+        src = ctx.root + src.substring(1);
+      }
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    jq: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        utils.js(deps.jquery).then(fn)
+      } else {
+        fn()
+      }
+    },
+    
+    onLoading: (el) => {
+      if (el) {
+        $(el).append('<div class="loading-wrap"><svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" stroke-opacity=".3" d="M12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="1.3s" values="60;0"/></path><path stroke-dasharray="15" stroke-dashoffset="15" d="M12 3C16.9706 3 21 7.02944 21 12"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="15;0"/><animateTransform attributeName="transform" dur="1.5s" repeatCount="indefinite" type="rotate" values="0 12 12;360 12 12"/></path></g></svg></div>');
+      }
+    },
+    onLoadSuccess: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap').remove();
+      }
+    },
+    onLoadFailure: (el) => {
+      if (el) {
+        $(el).find('.loading-wrap svg').remove();
+        $(el).find('.loading-wrap').append('<svg xmlns="http://www.w3.org/2000/svg" width="2em" height="2em" preserveAspectRatio="xMidYMid meet" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path stroke-dasharray="60" stroke-dashoffset="60" d="M12 3L21 20H3L12 3Z"><animate fill="freeze" attributeName="stroke-dashoffset" dur="0.5s" values="60;0"/></path><path stroke-dasharray="6" stroke-dashoffset="6" d="M12 10V14"><animate fill="freeze" attributeName="stroke-dashoffset" begin="0.6s" dur="0.2s" values="6;0"/></path></g><circle cx="12" cy="17" r="1" fill="currentColor" fill-opacity="0"><animate fill="freeze" attributeName="fill-opacity" begin="0.8s" dur="0.4s" values="0;1"/></circle></svg>');
+        $(el).find('.loading-wrap').addClass('error');
+      }
+    },
+    request: (el, url, callback, onFailure) => {
+      let retryTimes = 3;
+      utils.onLoading(el);
+      function req() {
+        return new Promise((resolve, reject) => {
+          let status = 0; // 0 等待 1 完成 2 超时
+          let timer = setTimeout(() => {
+            if (status === 0) {
+              status = 2;
+              timer = null;
+              reject('请求超时');
+              if (retryTimes == 0) {
+                onFailure();
+              }
+            }
+          }, 5000);
+          fetch(url).then(function(response) {
+            if (status !== 2) {
+              clearTimeout(timer);
+              resolve(response);
+              timer = null;
+              status = 1;
+            }
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Network response was not ok.');
+          }).then(function(data) {
+            retryTimes = 0;
+            utils.onLoadSuccess(el);
+            callback(data);
+          }).catch(function(error) {
+            if (retryTimes > 0) {
+              retryTimes -= 1;
+              setTimeout(() => {
+                req();
+              }, 5000);
+            } else {
+              utils.onLoadFailure(el);
+              onFailure();
+            }
+          });
+        });
+      }
+      req();
+    },
+  };
+</script>
+
+<script>
+  const sidebar = {
+    leftbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    rightbar: () => {
+      if (l_body) {
+        l_body.toggleAttribute('rightbar');
+        l_body.removeAttribute('leftbar');
+      }
+    },
+    dismiss: () => {
+      if (l_body) {
+        l_body.removeAttribute('leftbar');
+        l_body.removeAttribute('rightbar');
+      }
+    },
+    toggleTOC: () => {
+      document.querySelector('#data-toc').classList.toggle('collapse');
+    }
+  }
+</script>
+<script type="text/javascript">
+  (() => {
+    const tagSwitchers = document.querySelectorAll('.tag-subtree.parent-tag > a > .tag-switcher-wrapper')
+    for (const tagSwitcher of tagSwitchers) {
+      tagSwitcher.addEventListener('click', (e) => {
+        const parent = e.target.closest('.tag-subtree.parent-tag')
+        parent.classList.toggle('expanded')
+        e.preventDefault()
+      })
+    }
+
+    // Get active tag from query string, then activate it.
+    const urlParams = new URLSearchParams(window.location.search)
+    const activeTag = urlParams.get('tag')
+    if (activeTag) {
+      let tag = document.querySelector(`.tag-subtree[data-tag="${activeTag}"]`)
+      if (tag) {
+        tag.querySelector('a').classList.add('active')
+        
+        while (tag) {
+          tag.classList.add('expanded')
+          tag = tag.parentElement.closest('.tag-subtree.parent-tag')
+        }
+      }
+    }
+  })()
+</script>
+
+
+<!-- required -->
+<script src="/js/main.js?v=1.29.0" defer></script>
+
+<script type="text/javascript">
+  const applyTheme = (theme) => {
+    if (theme === 'auto') {
+      document.documentElement.removeAttribute('data-theme')
+    } else {
+      document.documentElement.setAttribute('data-theme', theme)
+    }
+
+    applyThemeToGiscus(theme)
+  }
+
+  const applyThemeToGiscus = (theme) => {
+    theme = theme === 'auto' ? 'preferred_color_scheme' : theme
+
+    const cmt = document.getElementById('giscus')
+    if (cmt) {
+      // This works before giscus load.
+      cmt.setAttribute('data-theme', theme)
+    }
+
+    const iframe = document.querySelector('#comments > section.giscus > iframe')
+    if (iframe) {
+      // This works after giscus loaded.
+      const src = iframe.src
+      const newSrc = src.replace(/theme=[\w]+/, `theme=${theme}`)
+      iframe.src = newSrc
+    }
+  }
+
+  const switchTheme = () => {
+    // light -> dark -> auto -> light -> ...
+    const currentTheme = document.documentElement.getAttribute('data-theme')
+    let newTheme;
+    switch (currentTheme) {
+      case 'light':
+        newTheme = 'dark'
+        break
+      case 'dark':
+        newTheme = 'auto'
+        break
+      default:
+        newTheme = 'light'
+    }
+    applyTheme(newTheme)
+    window.localStorage.setItem('Stellar.theme', newTheme)
+
+    const messages = {
+      light: `切换到浅色模式`,
+      dark: `切换到深色模式`,
+      auto: `切换到跟随系统配色`,
+    }
+    hud?.toast?.(messages[newTheme])
+  }
+
+  (() => {
+    // Apply user's preferred theme, if any.
+    const theme = window.localStorage.getItem('Stellar.theme')
+    if (theme !== null) {
+      applyTheme(theme)
+    }
+  })()
+</script>
+
+
+<!-- optional -->
+
+
+
+<script defer>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.services = Object.assign({}, JSON.parse(`{"mdrender":{"js":"/js/services/mdrender.js"},"siteinfo":{"js":"/js/services/siteinfo.js","api":null},"ghinfo":{"js":"/js/services/ghinfo.js"},"sites":{"js":"/js/services/sites.js"},"friends":{"js":"/js/services/friends.js"},"timeline":{"js":"/js/services/timeline.js"},"fcircle":{"js":"/js/services/fcircle.js"},"weibo":{"js":"/js/services/weibo.js"},"memos":{"js":"/js/services/memos.js"}}`));
+    for (let id of Object.keys(ctx.services)) {
+      const js = ctx.services[id].js;
+      if (id == 'siteinfo') {
+        ctx.cardlinks = document.querySelectorAll('a.link-card[cardlink]');
+        if (ctx.cardlinks?.length > 0) {
+          utils.js(js, { defer: true }).then(function () {
+            setCardLink(ctx.cardlinks);
+          });
+        }
+      } else {
+        const els = document.getElementsByClassName(`ds-${id}`);
+        if (els?.length > 0) {
+          utils.jq(() => {
+            if (id == 'timeline' || 'memos' || 'marked') {
+              utils.js(deps.marked).then(function () {
+                utils.js(js, { defer: true });
+              });
+            } else {
+              utils.js(js, { defer: true });
+            }
+          });
+        }
+      }
+    }
+  });
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    ctx.search = {
+      path: `/search.json`,
+    }
+    utils.js('/js/search/local-search.js', { defer: true });
+  });
+</script><script>
+  window.FPConfig = {
+    delay: 0,
+    ignoreKeywords: [],
+    maxRPS: 5,
+    hoverDelay: 25
+  };
+</script>
+<script defer src="https://cdn.bootcdn.net/ajax/libs/flying-pages/2.1.2/flying-pages.min.js"></script><script defer src="https://cdn.bootcdn.net/ajax/libs/vanilla-lazyload/17.8.4/lazyload.min.js"></script>
+<script>
+  // https://www.npmjs.com/package/vanilla-lazyload
+  // Set the options globally
+  // to make LazyLoad self-initialize
+  window.lazyLoadOptions = {
+    elements_selector: ".lazy",
+  };
+  // Listen to the initialization event
+  // and get the instance of LazyLoad
+  window.addEventListener(
+    "LazyLoad::Initialized",
+    function (event) {
+      window.lazyLoadInstance = event.detail.instance;
+    },
+    false
+  );
+  document.addEventListener('DOMContentLoaded', function () {
+    window.lazyLoadInstance?.update();
+  });
+</script><script>
+  ctx.fancybox = {
+    selector: `.timenode p>img`,
+    css: `https://cdn.bootcdn.net/ajax/libs/fancyapps-ui/5.0.22/fancybox/fancybox.min.css`,
+    js: `https://cdn.bootcdn.net/ajax/libs/fancyapps-ui/5.0.22/fancybox/fancybox.umd.min.js`
+  };
+  var selector = '[data-fancybox]:not(.error)';
+  if (ctx.fancybox.selector) {
+    selector += `, ${ctx.fancybox.selector}`
+  }
+  var needFancybox = document.querySelectorAll(selector).length !== 0;
+  if (!needFancybox) {
+    const els = document.getElementsByClassName('ds-memos');
+    if (els != undefined && els.length > 0) {
+      needFancybox = true;
+    }
+  }
+  if (needFancybox) {
+    utils.css(ctx.fancybox.css);
+    utils.js(ctx.fancybox.js, { defer: true }).then(function () {
+      Fancybox.bind(selector, {
+        hideScrollbar: false,
+        Thumbs: {
+          autoStart: false,
+        },
+        caption: (fancybox, slide) => {
+          return slide.triggerEl.alt || slide.triggerEl.dataset.caption || null
+        }
+      });
+    })
+  }
+</script>
+<script>
+  window.addEventListener('DOMContentLoaded', (event) => {
+    const swiper_api = document.getElementById('swiper-api');
+    if (swiper_api != undefined) {
+      utils.css(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.css`);
+      utils.js(`https://unpkg.com/swiper@10.3.1/swiper-bundle.min.js`, { defer: true }).then(function () {
+        const effect = swiper_api.getAttribute('effect') || '';
+        var swiper = new Swiper('.swiper#swiper-api', {
+          slidesPerView: 'auto',
+          spaceBetween: 8,
+          centeredSlides: true,
+          effect: effect,
+          rewind: true,
+          pagination: {
+            el: '.swiper-pagination',
+            clickable: true,
+          },
+          navigation: {
+            nextEl: '.swiper-button-next',
+            prevEl: '.swiper-button-prev',
+          },
+        });
+      })
+    }
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    window.codeElements = document.querySelectorAll('.code');
+    if (window.codeElements.length > 0) {
+      ctx.copycode = {
+        default_text: `Copy`,
+        success_text: `Copied`,
+        toast: `复制成功`,
+      };
+      utils.js('/js/plugins/copycode.js');
+    }
+  });
+</script>
+
+
+<!-- inject -->
+
+</div></body></html>
